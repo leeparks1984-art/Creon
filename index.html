@@ -30,8 +30,7 @@
     </div>
 
 <script>
-    // 1. Ensure the key is in quotes
-    const API_KEY = "AIzaSyBsq6w3UGxYxLP5zllMj_GMvvTLa4pq0GA"; 
+    const API_KEY = "AIzaSyC1fn8hdh0HLDp7gw68ieUGTd9C6v8AgaY"; 
 
     async function getAIDose() {
         const input = document.getElementById('foodInput').value;
@@ -39,31 +38,34 @@
         if (!input) return;
         
         resultDiv.style.display = "block";
-        resultDiv.innerHTML = '<span class="loading">Connecting to Gemini...</span>';
+        resultDiv.innerHTML = '<span class="loading">Model 2 is calculating high-precision fat...</span>';
 
-        // Using the stable V1 endpoint for 1.5-flash
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${API_KEY}`;
+        // Updated model path for Gemini 1.5 Pro
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${API_KEY}`;
 
         try {
             const response = await fetch(url, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    contents: [{ parts: [{ text: `Estimate fat for: ${input}. Use 1 Creon per 8g fat. Round up.` }] }]
+                    contents: [{
+                        parts: [{
+                            text: `You are a clinical EPI expert. User is in a 1.35kg weight slide with pale stools. 1. Estimate high-end fat grams for: "${input}". 2. Divide by 8 (1:8 ratio). 3. Round UP. 4. Output: 'Estimated Fat: [X]g. <br><span class="dose-num">[Y] Creon 25,000</span>'`
+                        }]
+                    }]
                 })
             });
 
             const data = await response.json();
             
-            if (response.ok) {
-                const aiResponse = data.candidates[0].content.parts[0].text;
-                resultDiv.innerHTML = aiResponse;
+            if (response.ok && data.candidates) {
+                resultDiv.innerHTML = data.candidates[0].content.parts[0].text;
             } else {
-                // THIS WILL TELL US THE PROBLEM (e.g., 403 Forbidden or 400 Bad Request)
-                resultDiv.innerHTML = `Error ${response.status}: ${data.error.message}`;
+                // If Pro is busy/restricted, this will tell us
+                resultDiv.innerHTML = `Error: ${data.error ? data.error.message : 'Model 2 limit reached.'}`;
             }
         } catch (error) {
-            resultDiv.innerHTML = "Connection Failed. Try a different browser or check your Key.";
+            resultDiv.innerHTML = "Connection failed. Please refresh.";
         }
     }
 </script>

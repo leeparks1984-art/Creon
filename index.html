@@ -30,7 +30,7 @@
     </div>
 
 <script>
-    const API_KEY = "AIzaSyC1fn8hdh0HLDp7gw68ieUGTd9C6v8AgaY"; 
+    const API_KEY = "AIzaSyBsq6w3UGxYxLP5zllMj_GMvvTLa4pq0GA"; 
 
     async function getAIDose() {
         const input = document.getElementById('foodInput').value;
@@ -38,10 +38,9 @@
         if (!input) return;
         
         resultDiv.style.display = "block";
-        resultDiv.innerHTML = '<span class="loading">Model 2 is calculating high-precision fat...</span>';
+        resultDiv.innerHTML = 'Analyzing...';
 
-        // Updated model path for Gemini 1.5 Pro
-        const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro-latest:generateContent?key=${API_KEY}`;
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
 
         try {
             const response = await fetch(url, {
@@ -50,7 +49,7 @@
                 body: JSON.stringify({
                     contents: [{
                         parts: [{
-                            text: `You are a clinical EPI expert. User is in a 1.35kg weight slide with pale stools. 1. Estimate high-end fat grams for: "${input}". 2. Divide by 8 (1:8 ratio). 3. Round UP. 4. Output: 'Estimated Fat: [X]g. <br><span class="dose-num">[Y] Creon 25,000</span>'`
+                            text: `Food: ${input}. Estimate fat grams. Calculate Creon 25k dose (1:8 ratio). Round up. Format: 'Fat: [X]g. Dose: [Y] capsules.'`
                         }]
                     }]
                 })
@@ -58,14 +57,15 @@
 
             const data = await response.json();
             
-            if (response.ok && data.candidates) {
+            if (data.candidates && data.candidates[0].content) {
                 resultDiv.innerHTML = data.candidates[0].content.parts[0].text;
             } else {
-                // If Pro is busy/restricted, this will tell us
-                resultDiv.innerHTML = `Error: ${data.error ? data.error.message : 'Model 2 limit reached.'}`;
+                // This tells us if it's a Safety Block or a Model error
+                resultDiv.innerHTML = "AI blocked or empty response. Check API console.";
+                console.log(data);
             }
         } catch (error) {
-            resultDiv.innerHTML = "Connection failed. Please refresh.";
+            resultDiv.innerHTML = "Connection Error. Use Incognito mode or check Key.";
         }
     }
 </script>

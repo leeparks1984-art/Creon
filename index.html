@@ -30,7 +30,8 @@
     </div>
 
 <script>
-    const API_KEY = "AIzaSyBsq6w3UGxYxLP5zllMj_GMvvTLa4pq0GA"; 
+    // Ensure your key is wrapped in quotes
+    const API_KEY = "AIzaSyC1fn8hdh0HLDp7gw68ieUGTd9C6v8AgaY"; 
 
     async function getAIDose() {
         const input = document.getElementById('foodInput').value;
@@ -38,8 +39,9 @@
         if (!input) return;
         
         resultDiv.style.display = "block";
-        resultDiv.innerHTML = 'Analyzing...';
+        resultDiv.innerHTML = 'Connecting to Growth Engine...';
 
+        // Universal Stable Endpoint
         const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
 
         try {
@@ -49,9 +51,16 @@
                 body: JSON.stringify({
                     contents: [{
                         parts: [{
-                            text: `Food: ${input}. Estimate fat grams. Calculate Creon 25k dose (1:8 ratio). Round up. Format: 'Fat: [X]g. Dose: [Y] capsules.'`
+                            text: `Analyze: "${input}". Estimate high-end fat (g). Ratio: 1 Creon 25k per 8g fat. Round UP. Output: "Fat: [X]g. <br>Take [Y] Creon 25,000"`
                         }]
-                    }]
+                    }],
+                    // Adding safety settings to prevent "Empty Response" errors
+                    safetySettings: [
+                        { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+                        { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+                        { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+                        { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
+                    ]
                 })
             });
 
@@ -59,13 +68,13 @@
             
             if (data.candidates && data.candidates[0].content) {
                 resultDiv.innerHTML = data.candidates[0].content.parts[0].text;
+            } else if (data.error) {
+                resultDiv.innerHTML = `API Error: ${data.error.message}`;
             } else {
-                // This tells us if it's a Safety Block or a Model error
-                resultDiv.innerHTML = "AI blocked or empty response. Check API console.";
-                console.log(data);
+                resultDiv.innerHTML = "Response blocked. Try a simpler food name.";
             }
         } catch (error) {
-            resultDiv.innerHTML = "Connection Error. Use Incognito mode or check Key.";
+            resultDiv.innerHTML = "Connection Failed. Refresh and try again.";
         }
     }
 </script>

@@ -30,8 +30,8 @@
     </div>
 
     <script>
-    // 1. PASTE YOUR GOOGLE API KEY HERE
-    const API_KEY = AIzaSyC1fn8hdh0HLDp7gw68ieUGTd9C6v8AgaY; 
+    // Your key is now properly wrapped in quotes
+    const API_KEY = "AIzaSyC1fn8hdh0HLDp7gw68ieUGTd9C6v8AgaY"; 
 
     async function getAIDose() {
         const input = document.getElementById('foodInput').value;
@@ -40,17 +40,17 @@
         if (!input) return;
         
         resultDiv.style.display = "block";
-        resultDiv.innerHTML = '<span class="loading">Gemini is calculating fat for growth...</span>';
+        resultDiv.innerHTML = '<span class="loading">Gemini is calculating fat...</span>';
 
-        // Updated for Google Gemini API format
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+        // This is the specific URL for Google Gemini
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${AIzaSyC1fn8hdh0HLDp7gw68ieUGTd9C6v8AgaY}`;
 
         const payload = {
             contents: [{
                 parts: [{
-                    text: `You are a clinical EPI assistant. 
+                    text: `You are a clinical assistant for EPI. 
                     1. Estimate high-end total fat in grams for: "${input}". 
-                    2. Divide total fat by 8 (User Ratio 1:8). 
+                    2. Use ratio: 1 Creon 25k per 8g fat. 
                     3. Round UP to the next whole number. 
                     4. Output format: "Estimated Fat: [X]g. <br><span class='dose-num'>[Y] Creon 25,000</span>"`
                 }]
@@ -65,12 +65,14 @@
             });
 
             const data = await response.json();
-            // Gemini returns data in a nested candidate structure
-            const aiResponse = data.candidates[0].content.parts[0].text;
-            resultDiv.innerHTML = aiResponse;
+            
+            if (data.candidates && data.candidates[0].content.parts[0].text) {
+                resultDiv.innerHTML = data.candidates[0].content.parts[0].text;
+            } else {
+                resultDiv.innerHTML = "Error: API Key may be restricted or invalid.";
+            }
         } catch (error) {
-            console.error(error);
-            resultDiv.innerHTML = "Error: Check API Key or Internet Connection.";
+            resultDiv.innerHTML = "Error connecting to Gemini. Check internet.";
         }
     }
 </script>

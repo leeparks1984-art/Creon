@@ -29,50 +29,41 @@
         <div id="result"></div>
     </div>
 
-    <script>
-    // Your key is now properly wrapped in quotes
-    const API_KEY = "AIzaSyC1fn8hdh0HLDp7gw68ieUGTd9C6v8AgaY";
+<script>
+    // 1. Ensure the key is in quotes
+    const API_KEY = "AIzaSyC1fn8hdh0HLDp7gw68ieUGTd9C6v8AgaY"; 
 
     async function getAIDose() {
         const input = document.getElementById('foodInput').value;
         const resultDiv = document.getElementById('result');
-        
         if (!input) return;
         
         resultDiv.style.display = "block";
-        resultDiv.innerHTML = '<span class="loading">Gemini is calculating fat...</span>';
+        resultDiv.innerHTML = '<span class="loading">Connecting to Gemini...</span>';
 
-        // This is the specific URL for Google Gemini
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${AIzaSyC1fn8hdh0HLDp7gw68ieUGTd9C6v8AgaY}`;
-
-        const payload = {
-            contents: [{
-                parts: [{
-                    text: `You are a clinical assistant for EPI. 
-                    1. Estimate high-end total fat in grams for: "${input}". 
-                    2. Use ratio: 1 Creon 25k per 8g fat. 
-                    3. Round UP to the next whole number. 
-                    4. Output format: "Estimated Fat: [X]g. <br><span class='dose-num'>[Y] Creon 25,000</span>"`
-                }]
-            }]
-        };
+        // Endpoint for Gemini 1.5 Flash
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
 
         try {
             const response = await fetch(url, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: `Estimate fat for: ${input}. Use 1 Creon per 8g fat. Round up.` }] }]
+                })
             });
 
             const data = await response.json();
             
-            if (data.candidates && data.candidates[0].content.parts[0].text) {
-                resultDiv.innerHTML = data.candidates[0].content.parts[0].text;
+            if (response.ok) {
+                const aiResponse = data.candidates[0].content.parts[0].text;
+                resultDiv.innerHTML = aiResponse;
             } else {
-                resultDiv.innerHTML = "Error: API Key may be restricted or invalid.";
+                // THIS WILL TELL US THE PROBLEM (e.g., 403 Forbidden or 400 Bad Request)
+                resultDiv.innerHTML = `Error ${response.status}: ${data.error.message}`;
             }
         } catch (error) {
-            resultDiv.innerHTML = "Error connecting to Gemini. Check internet.";
+            resultDiv.innerHTML = "Connection Failed. Try a different browser or check your Key.";
         }
     }
 </script>

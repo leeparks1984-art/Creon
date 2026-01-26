@@ -41,8 +41,8 @@
         resultDiv.style.display = "block";
         resultDiv.innerHTML = '<span class="loading">Connecting to Gemini...</span>';
 
-        // Endpoint for Gemini 1.5 Flash
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+        // Using the stable V1 endpoint for 1.5-flash
+        const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
 
         try {
             const response = await fetch(url, {

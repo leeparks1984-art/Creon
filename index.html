@@ -3,80 +3,337 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eusso Creon Calc - 1:8 Ratio</title>
+    <title>Article Code Barcode Generator</title>
+    
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0f172a; color: #f1f5f9; display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .card { background: #1e293b; padding: 2rem; border-radius: 1rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
-        h1 { font-size: 1.5rem; color: #38bdf8; margin-bottom: 0.5rem; text-align: center; }
-        p.subtitle { font-size: 0.8rem; color: #94a3b8; text-align: center; margin-bottom: 1.5rem; }
-        input { width: 100%; padding: 12px; border-radius: 0.5rem; border: 1px solid #334155; background: #0f172a; color: white; margin-bottom: 1rem; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; border-radius: 0.5rem; border: none; background: #38bdf8; color: #0f172a; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        button:hover { background: #0ea5e9; }
-        #result { margin-top: 1.5rem; padding: 1rem; background: #334155; border-radius: 0.5rem; min-height: 50px; display: none; }
-        .dose-num { font-size: 2rem; color: #22c55e; display: block; margin-top: 5px; }
-        .loading { color: #94a3b8; font-style: italic; }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+            background-color: #e3effa;
+            color: #333;
+        }
+        h1 {
+            font-size: 1.8rem;
+            color: #1a2a3a;
+            margin-bottom: 5px;
+        }
+        .description {
+            color: #555;
+            margin-bottom: 20px;
+            font-size: 1em;
+            line-height: 1.4;
+        }
+        .controls {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+        .format-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+        }
+        select {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            font-size: 1em;
+        }
+        .upload-btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #5ab871;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 250px;
+        }
+        .upload-btn:hover {
+            background-color: #4a9e61;
+        }
+        .upload-btn.disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        input[type="file"] {
+            display: none;
+        }
+        #system-status {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        .status-loading { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+        .status-ready { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .status-error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        
+        #scan-status {
+            margin: 20px 0;
+            font-weight: bold;
+            color: #007bff;
+            min-height: 24px;
+        }
+        .output-title {
+            text-align: left;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        .barcode-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .barcode-container {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            text-align: left;
+        }
+        .barcode-container p {
+            margin: 0 0 10px 0;
+            font-size: 0.9em;
+            color: #666;
+            font-weight: bold;
+        }
+        .barcode-container svg {
+            width: 100%;
+            height: auto;
+        }
+        img#preview {
+            max-width: 100%;
+            max-height: 300px;
+            height: auto;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
     </style>
 </head>
 <body>
 
-    <div class="card">
-        <h1>Creon AI Calculator</h1>
-        <p class="subtitle">Ratio 1:8g | Goal 65kg | Absorption Plus Mode</p>
-        
-        <input type="text" id="foodInput" placeholder="What are you eating? (e.g. 2 scotch pancakes)">
-        <button onclick="getAIDose()">Calculate Dose</button>
-
-        <div id="result"></div>
+    <h1>OrderedArticle Barcode Generator</h1>
+    <div class="description">
+        If scanning fails, turn your phone brightness to 100%. If your store scanner uses a thin red laser, it cannot read phone screens and you must print these barcodes on paper.
     </div>
 
-<script>
-    // Ensure your key is wrapped in quotes
-    const API_KEY = "AIzaSyC1fn8hdh0HLDp7gw68ieUGTd9C6v8AgaY"; 
+    <div id="system-status" class="status-loading">
+        Checking connection to scanner libraries...
+    </div>
 
-    async function getAIDose() {
-        const input = document.getElementById('foodInput').value;
-        const resultDiv = document.getElementById('result');
-        if (!input) return;
-        
-        resultDiv.style.display = "block";
-        resultDiv.innerHTML = 'Connecting to Growth Engine...';
+    <div class="controls">
+        <div class="format-selector">
+            <label for="barcodeFormat">Scanner Format:</label>
+            <select id="barcodeFormat">
+                <option value="CODE39">CODE39 (Retail Standard)</option>
+                <option value="EAN13">EAN13 (Supermarket Till Standard)</option>
+                <option value="CODE128">CODE128 (Modern Standard)</option>
+                <option value="ITF">ITF (Warehouse Standard)</option>
+            </select>
+        </div>
 
-        // Universal Stable Endpoint
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+        <label class="upload-btn disabled" id="uploadLabel">
+            Take Photo / Upload Image
+            <input type="file" accept="image/*" id="imageInput" disabled>
+        </label>
+    </div>
 
-        try {
-            const response = await fetch(url, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    contents: [{
-                        parts: [{
-                            text: `Analyze: "${input}". Estimate high-end fat (g). Ratio: 1 Creon 25k per 8g fat. Round UP. Output: "Fat: [X]g. <br>Take [Y] Creon 25,000"`
-                        }]
-                    }],
-                    // Adding safety settings to prevent "Empty Response" errors
-                    safetySettings: [
-                        { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
-                        { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
-                        { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
-                        { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
-                    ]
-                })
-            });
+    <div id="scan-status"></div>
+    <img id="preview" alt="Image preview">
+    
+    <div class="output-title" id="outputTitle" style="display: none;">Extracted Product Codes</div>
+    <div id="output" class="barcode-grid"></div>
 
-            const data = await response.json();
-            
-            if (data.candidates && data.candidates[0].content) {
-                resultDiv.innerHTML = data.candidates[0].content.parts[0].text;
-            } else if (data.error) {
-                resultDiv.innerHTML = `API Error: ${data.error.message}`;
-            } else {
-                resultDiv.innerHTML = "Response blocked. Try a simpler food name.";
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js" onload="checkLibraries()" onerror="libraryError()"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js" onload="checkLibraries()" onerror="libraryError()"></script>
+
+    <script>
+        const imageInput = document.getElementById('imageInput');
+        const uploadLabel = document.getElementById('uploadLabel');
+        const formatSelect = document.getElementById('barcodeFormat');
+        const scanStatusDiv = document.getElementById('scan-status');
+        const systemStatusDiv = document.getElementById('system-status');
+        const outputDiv = document.getElementById('output');
+        const outputTitle = document.getElementById('outputTitle');
+        const previewImg = document.getElementById('preview');
+
+        let librariesLoaded = 0;
+        let currentExtractedCodes = [];
+
+        // Diagnostic Check: Ensure external libraries actually load
+        function checkLibraries() {
+            librariesLoaded++;
+            if (librariesLoaded === 2) {
+                systemStatusDiv.className = 'status-ready';
+                systemStatusDiv.textContent = 'System Ready: Scanner libraries loaded successfully.';
+                imageInput.disabled = false;
+                uploadLabel.classList.remove('disabled');
             }
-        } catch (error) {
-            resultDiv.innerHTML = "Connection Failed. Refresh and try again.";
         }
-    }
-</script>
+
+        // Diagnostic Check: Catch firewalls blocking the libraries
+        function libraryError() {
+            systemStatusDiv.className = 'status-error';
+            systemStatusDiv.innerHTML = '<strong>Error:</strong> Cannot reach scanner libraries. Are you on the store Wi-Fi? The firewall might be blocking the connection. Try disconnecting from Wi-Fi.';
+        }
+
+        // Re-draw barcodes automatically if the user changes the format dropdown
+        formatSelect.addEventListener('change', () => {
+            if (currentExtractedCodes.length > 0) {
+                renderBarcodes(currentExtractedCodes);
+            }
+        });
+
+        imageInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // Clear previous results
+            outputDiv.innerHTML = '';
+            outputTitle.style.display = 'none';
+            currentExtractedCodes = [];
+            scanStatusDiv.textContent = 'Enhancing image for screen reading...';
+            
+            const reader = new FileReader();
+            const img = new Image();
+
+            reader.onload = (event) => {
+                img.src = event.target.result;
+                previewImg.src = event.target.result;
+                previewImg.style.display = 'block';
+            };
+
+            img.onload = async () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                
+                // Filter to reduce monitor glare
+                ctx.filter = 'grayscale(100%) contrast(200%)';
+                ctx.drawImage(img, 0, 0);
+                
+                const processedImageData = canvas.toDataURL('image/jpeg');
+                scanStatusDiv.textContent = 'OCR Processing...';
+
+                try {
+                    const result = await Tesseract.recognize(processedImageData, 'eng', {
+                        logger: m => {
+                            if (m.status === 'recognizing text') {
+                                scanStatusDiv.textContent = `OCR Processing... ${Math.round(m.progress * 100)}%`;
+                            }
+                        }
+                    });
+
+                    const text = result.data.text;
+                    scanStatusDiv.textContent = 'Extracting and correcting product codes...';
+
+                    const words = text.split(/\s+/);
+                    const potentialCodes = [];
+
+                    words.forEach(word => {
+                        let cleanWord = word.replace(/[^a-zA-Z0-9]/g, '');
+                        
+                        if (cleanWord.length >= 8 && cleanWord.length <= 14) {
+                            let correctedWord = cleanWord
+                                .replace(/[Oo]/g, '0')
+                                .replace(/[Il]/g, '1')
+                                .replace(/[Zz]/g, '2')
+                                .replace(/[Ss]/g, '5')
+                                .replace(/[Gg]/g, '6')
+                                .replace(/[Bb]/g, '8');
+
+                            if (/^\d+$/.test(correctedWord)) {
+                                potentialCodes.push(correctedWord);
+                            }
+                        }
+                    });
+
+                    currentExtractedCodes = [...new Set(potentialCodes)];
+
+                    if (currentExtractedCodes.length === 0) {
+                        scanStatusDiv.textContent = 'No product codes were detected. Try moving the camera slightly to reduce screen glare.';
+                    } else {
+                        scanStatusDiv.textContent = `Successfully extracted ${currentExtractedCodes.length} code(s).`;
+                        outputTitle.style.display = 'block';
+                        renderBarcodes(currentExtractedCodes);
+                    }
+
+                } catch (error) {
+                    console.error('Error during OCR processing:', error);
+                    scanStatusDiv.innerHTML = `<strong>Error:</strong> The scanner engine crashed. This usually happens if the browser restricts local file processing.`;
+                }
+            };
+
+            reader.readAsDataURL(file);
+        });
+
+        // Function to draw the barcodes onto the screen
+        function renderBarcodes(codes) {
+            outputDiv.innerHTML = '';
+            const selectedFormat = formatSelect.value;
+
+            codes.forEach((originalCode, index) => {
+                let codeToRender = originalCode;
+                let displayLabel = `OrderedArticle: ${originalCode}`;
+
+                if (selectedFormat === 'ITF' && codeToRender.length % 2 !== 0) {
+                    codeToRender = '0' + codeToRender;
+                    displayLabel = `${originalCode} (ITF Padded: ${codeToRender})`;
+                } else if (selectedFormat === 'EAN13') {
+                    codeToRender = originalCode.padStart(12, '0');
+                    displayLabel = `${originalCode} (EAN13 Padded: ${codeToRender})`;
+                }
+
+                const container = document.createElement('div');
+                container.className = 'barcode-container';
+                
+                const label = document.createElement('p');
+                label.textContent = displayLabel;
+                container.appendChild(label);
+
+                const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                svg.id = `barcode-${index}`;
+                container.appendChild(svg);
+                
+                outputDiv.appendChild(container);
+
+                try {
+                    JsBarcode(`#barcode-${index}`, codeToRender, {
+                        format: selectedFormat,
+                        width: 3,
+                        height: 100,
+                        displayValue: true,
+                        margin: 10,
+                        fontSize: 16,
+                        font: 'inherit'
+                    });
+                } catch (e) {
+                    console.error(`Failed to generate ${selectedFormat} for ${codeToRender}`, e);
+                    label.textContent += ` - Error: Format unsupported for this length`;
+                }
+            });
+        }
+    </script>
 </body>
 </html>
+

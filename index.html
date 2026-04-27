@@ -1,111 +1,124 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Article Barcode Generator v2.2</title>
-
-<script src="JsBarcode.all.min.js"></script>
-
-<style>
-    body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f9; }
-    .controls { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
-    textarea { width: 100%; height: 150px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; padding: 10px; font-family: monospace; }
-    button { padding: 10px 20px; margin-right: 10px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 4px; font-weight: bold; }
-    .labels { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 20px; }
-    .label { background: white; padding: 15px; border: 1px solid #eee; text-align: center; border-radius: 4px; min-height: 120px; }
-    @media print { .controls, h2 { display: none; } body { background-color: white; padding: 0; } .labels { gap: 10px; } }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image to EAN-13 Barcode Generator</title>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+            text-align: center;
+        }
+        .upload-card {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        input[type="file"] {
+            display: none;
+        }
+        .upload-btn {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            display: inline-block;
+            transition: background-color 0.3s;
+        }
+        .upload-btn:hover {
+            background-color: #0056b3;
+        }
+        #status {
+            margin-top: 15px;
+            font-weight: bold;
+            color: #555;
+        }
+        #results {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+        .barcode-container {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .barcode-container p {
+            margin: 0 0 10px 0;
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
 </head>
 <body>
 
-<h2>Article Barcode Generator v2.2</h2>
+    <div class="upload-card">
+        <h2>Upload Item Number Image</h2>
+        <p>Upload a photo of your spreadsheet or document. The app will extract 6 to 12 digit numbers and convert them to EAN-13.</p>
+        
+        <label class="upload-btn">
+            Choose Image
+            <input type="file" id="imageInput" accept="image/png, image/jpeg, image/jpg">
+        </label>
+        
+        <div id="status">Waiting for image upload...</div>
+    </div>
 
-<div class="controls">
-    <p>Using local JsBarcode library for maximum scanner compatibility:</p>
-    <textarea id="input">100141386
-100509544
-100142599
-100143076
-100151211
-100161952
-100000633
-100001933
-100085291
-100109383
-100122987
-100125367
-100125620
-100127949
-100128552
-100134717
-100140529
-100145605
-100151271
-100159509
-100161147
-100163319
-100164005
-100165321
-100168018
-100168754
-100169295</textarea>
-    <br>
-    <button onclick="generateBarcodes()">Generate Barcodes</button>
-    <button onclick="window.print()" style="background-color: #6c757d;">Print Labels</button>
-</div>
+    <div id="results"></div>
 
-<div class="labels" id="labels"></div>
+    <script>
+        // --- Core Logic: EAN-13 Check Digit Calculation ---
+        function calculateCheckDigit(paddedStr) {
+            let sum = 0;
+            // EAN-13 weights: Odd positions (0-indexed) * 1, Even positions * 3
+            for (let i = 0; i < 12; i++) {
+                let digit = parseInt(paddedStr[i]);
+                sum += digit * (i % 2 === 0 ? 1 : 3);
+            }
+            let remainder = sum % 10;
+            return remainder === 0 ? 0 : 10 - remainder;
+        }
 
-<script>
-function getCheckDigit(code) {
-    let sum = 0;
-    for (let i = 0; i < 12; i++) {
-        sum += parseInt(code[i]) * (i % 2 === 0 ? 1 : 3);
-    }
-    return (10 - (sum % 10)) % 10;
-}
+        // --- Core Logic: Pad and Append Check Digit ---
+        function generateEAN13(numberStr) {
+            // Pad with leading zeros to make it exactly 12 characters long
+            let padded = numberStr.padStart(12, '0');
+            
+            // If the OCR picked up something longer than 12 digits, truncate it for safety
+            if (padded.length > 12) {
+                padded = padded.substring(0, 12);
+            }
+            
+            let checkDigit = calculateCheckDigit(padded);
+            return padded + checkDigit;
+        }
 
-function generateBarcodes() {
-    // If the local library isn't fully loaded yet, wait and try again
-    if (typeof JsBarcode === 'undefined') {
-        console.warn("JsBarcode not found. Retrying...");
-        setTimeout(generateBarcodes, 500);
-        return;
-    }
+        // --- Handle File Upload & Processing ---
+        document.getElementById('imageInput').addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
 
-    const input = document.getElementById("input").value.trim().split("\n");
-    const container = document.getElementById("labels");
-    container.innerHTML = "";
+            const statusEl = document.getElementById('status');
+            const resultsEl = document.getElementById('results');
+            
+            statusEl.style.color = "#007bff";
+            statusEl.textContent = "Scanning image for numbers... (This takes a few seconds)";
+            resultsEl.innerHTML = ""; // Clear previous results
 
-    input.forEach(line => {
-        let code = line.trim();
-        if (!code || isNaN(code)) return;
-
-        // Pad to 12 digits
-        while (code.length < 12) { code = "0" + code; }
-        if (code.length > 12) { code = code.slice(-12); }
-
-        const fullCode = code + getCheckDigit(code);
-        const div = document.createElement("div");
-        div.className = "label";
-        const svg = document.createElement("svg");
-
-        JsBarcode(svg, fullCode, {
-            format: "EAN13",
-            width: 2,
-            height: 80,
-            displayValue: true,
-            fontSize: 16,
-            margin: 10 // Added margin for easier handheld scanning
-        });
-
-        div.appendChild(svg);
-        container.appendChild(div);
-    });
-}
-
-// Auto-run on load
-window.onload = generateBarcodes;
-</script>
-</body>
-</html>
+            try {
+                // 1

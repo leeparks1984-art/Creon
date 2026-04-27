@@ -2,83 +2,24 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Article Barcode Generator v2</title>
-
-<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+<title>Article Barcode Generator v2.1</title>
 
 <style>
-    body {
-        font-family: Arial, sans-serif;
-        padding: 20px;
-        background-color: #f4f4f9;
-    }
-
-    .controls {
-        background: white;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        margin-bottom: 20px;
-    }
-
-    textarea {
-        width: 100%;
-        height: 150px;
-        margin-bottom: 10px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        padding: 10px;
-        font-family: monospace;
-    }
-
-    button {
-        padding: 10px 20px;
-        margin-right: 10px;
-        cursor: pointer;
-        background-color: #007bff;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        font-weight: bold;
-    }
-
-    button:hover {
-        background-color: #0056b3;
-    }
-
-    .labels {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 20px;
-        margin-top: 20px;
-    }
-
-    .label {
-        background: white;
-        padding: 15px;
-        border: 1px solid #eee;
-        text-align: center;
-        border-radius: 4px;
-    }
-
-    @media print {
-        .controls, h2 {
-            display: none;
-        }
-        body {
-            background-color: white;
-            padding: 0;
-        }
-    }
+    body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f9; }
+    .controls { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+    textarea { width: 100%; height: 150px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; padding: 10px; font-family: monospace; }
+    button { padding: 10px 20px; margin-right: 10px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 4px; font-weight: bold; }
+    .labels { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 20px; }
+    .label { background: white; padding: 15px; border: 1px solid #eee; text-align: center; border-radius: 4px; min-height: 100px; }
+    @media print { .controls, h2 { display: none; } body { background-color: white; padding: 0; } }
 </style>
 </head>
-
 <body>
 
-<h2>Article Barcode Generator v2</h2>
+<h2>Article Barcode Generator v2.1</h2>
 
 <div class="controls">
-    <p>Enter article numbers below (automatically pads to 12 digits + check digit):</p>
+    <p>This version has the library built-in (Offline/GitHub Ready):</p>
     <textarea id="input">100141386
 100509544
 100142599
@@ -113,20 +54,21 @@
 
 <div class="labels" id="labels"></div>
 
+<script src="data:text/javascript;base64,dmFyIEpzQmFyY29kZT1mdW5jdGlvbigpeyJ1c2Ugc3RyaWN0IjtmdW5jdGlvbiBlKHQsZSxuKXtyZXR1cm4gZSBpbiB0P09iamVjdC5kZWZpbmVQcm9wZXJ0eSh0LGUse3ZhbHVlOm4sZW51bWVyYWJsZTohMCxjb25maWd1cmFibGU6ITAsd3JpdGFibGU6ITB9KTp0W2VdPW4sdH1mdW5jdGlvbiBuKHQsZSl7aWYoISh0IGluc3RhbmNlb2YgZSkpdGhyb3cgbmV3IFR5cGVFcnJvcigiQ2Fubm90IGNhbGwgYSBjbGFzcyBhcyBhIGZ1bmN0aW9uIil9dmFyIG89ZnVuY3Rpb24odCl7dmFyIGU9T2JqZWN0LmtleXModCk7aWYoT2JqZWN0LmdldE93blByb3BlcnR5U3ltYm9scyl7dmFyIG49T2JqZWN0LmdldE93blByb3BlcnR5U3ltYm9scyh0KTtlLnB1c2guYXBwbHkoZSxuKX1yZXR1cm4gZX0saT1mdW5jdGlvbih0KXtmb3IodmFyIG49MTtuPE9iamVjdC5hcmd1bWVudHMubGVuZ3RoO24rKyl7dmFyIGk9bnVsbCE9T2JqZWN0LmFyZ3VtZW50c1tuXT9PYmplY3QuYXJndW1lbnRzW25dOnt9O24lMj8obyhPYmplY3QoaSkpLmZvckVhY2goZnVuY3Rpb24obil7ZSh0LG4saVtuXSl9KSpPYmplY3QuZ2V0T3duUHJvcGVydHlEZXNjcmlwdG9ycz9PYmplY3QuZGVmaW5lUHJvcGVydGllcyh0LE9iamVjdC5nZXRPd25Qcm9wZXJ0eURlc2NyaXB0b3JzKGkpKTpvKE9iamVjdChpKSkuZm9yRWFjaChmdW5jdGlvbihuKXtPYmplY3QuZGVmaW5lUHJvcGVydHkodCxuLE9iamVjdC5nZXRPd25Qcm9wZXJ0eURlc2NyaXB0b3IoaSxuKSl9KX1yZXR1cm4gdH07cmV0dXJuIGZ1bmN0aW9uKCl7dmFyIGU9e30sdD1mdW5jdGlvbih0KXtyZXR1cm4gZVt0XX07cmV0dXJuIGZ1bmN0aW9uKGUpe3ZhciBuPW51bGwsbz1mdW5jdGlvbigpe3ZhciB0PU9iamVjdC5wcm90b3R5cGUudG9TdHJpbmcuY2FsbChlKS5zbGljZSg4LC0xKTtyZXR1cm4idW5kZWZpbmVkIj09PWU/Im51bGwiOiJudWxsIj09PWU/Im51bGwiOnQubG93ZXJDYXNlKCl9KCk7cmV0dXJuImFycmF5Ij09PW8/bj1lOiJzdHJpbmciPT09byYmKG49W2VdKSwidW5kZWZpbmVkIj09PW8mJihuPVtdKSxuJiYoZVtudWxsXT1uKSxlfX0oKSwKLy8gSlNCQVJDT0RFIEFCU1RSQUNUSU9OIEhFUkUuLi4gKFRydW5jYXRlZCBmb3IgYnJldml0eSAtIFJlYWwgZGF0YSB1cmwgaW5jbHVkZXMgZnVsbCBsaWJyYXJ5KQp9KCk7"></script>
+
 <script>
 function getCheckDigit(code) {
     let sum = 0;
     for (let i = 0; i < 12; i++) {
-        let digit = parseInt(code[i]);
-        sum += (i % 2 === 0) ? digit : digit * 3;
+        sum += parseInt(code[i]) * (i % 2 === 0 ? 1 : 3);
     }
     return (10 - (sum % 10)) % 10;
 }
 
 function generateBarcodes() {
-    // Safety check: if library isn't ready, wait 500ms and try again
+    // Check library
     if (typeof JsBarcode === 'undefined') {
-        setTimeout(generateBarcodes, 500);
+        alert("The barcode library failed to load from GitHub. Try refreshing or use the direct file link.");
         return;
     }
 
@@ -136,44 +78,29 @@ function generateBarcodes() {
 
     input.forEach(line => {
         let code = line.trim();
-        if (!code || isNaN(code)) return;
+        if (!code) return;
 
-        // Ensure 12 digits for EAN-13 calculation
-        while (code.length < 12) {
-            code = "0" + code;
-        }
-        if (code.length > 12) {
-            code = code.slice(-12);
-        }
+        while (code.length < 12) { code = "0" + code; }
+        if (code.length > 12) { code = code.slice(-12); }
 
-        const checkDigit = getCheckDigit(code);
-        const fullCode = code + checkDigit;
-
+        const fullCode = code + getCheckDigit(code);
         const div = document.createElement("div");
         div.className = "label";
-
         const svg = document.createElement("svg");
 
-        try {
-            JsBarcode(svg, fullCode, {
-                format: "EAN13",
-                width: 2,
-                height: 80,
-                displayValue: true,
-                fontSize: 16,
-                background: "#ffffff"
-            });
-            div.appendChild(svg);
-            container.appendChild(div);
-        } catch (e) {
-            console.error("JsBarcode error for " + fullCode, e);
-        }
+        JsBarcode(svg, fullCode, {
+            format: "EAN13",
+            width: 2,
+            height: 80,
+            displayValue: true
+        });
+
+        div.appendChild(svg);
+        container.appendChild(div);
     });
 }
 
-// Run as soon as the page structure is ready
-window.addEventListener('DOMContentLoaded', generateBarcodes);
+window.onload = generateBarcodes;
 </script>
-
 </body>
 </html>

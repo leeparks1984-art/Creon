@@ -127,20 +127,30 @@ function getCheckDigit(code) {
 }
 
 function generateBarcodes() {
-    const input = document.getElementById("input").value.trim().split("\n");
+    // Check if JsBarcode library is actually ready
+    if (typeof JsBarcode === 'undefined') {
+        console.warn("JsBarcode library not ready. Retrying in 500ms...");
+        setTimeout(generateBarcodes, 500);
+        return;
+    }
+
+    const inputArea = document.getElementById("input");
     const container = document.getElementById("labels");
+    
+    if (!inputArea || !container) return;
+
+    const lines = inputArea.value.trim().split("\n");
     container.innerHTML = "";
 
-    input.forEach(line => {
+    lines.forEach(line => {
         let code = line.trim();
         if (!code || isNaN(code)) return;
 
-        // Pad with leading zeros to reach 12 digits for EAN-13 calculation
+        // Pad with leading zeros to reach 12 digits
         while (code.length < 12) {
             code = "0" + code;
         }
         
-        // If it's longer than 12, take only the last 12
         if (code.length > 12) {
             code = code.slice(-12);
         }
@@ -164,13 +174,17 @@ function generateBarcodes() {
             div.appendChild(svg);
             container.appendChild(div);
         } catch (e) {
-            console.error("Could not generate barcode for:", fullCode);
+            console.error("Barcode Generation Error:", e);
         }
     });
 }
 
-// Auto-run on load
-window.onload = generateBarcodes;
+// Safer load trigger
+if (document.readyState === "complete" || document.readyState === "interactive") {
+    generateBarcodes();
+} else {
+    window.addEventListener("DOMContentLoaded", generateBarcodes);
+}
 </script>
 
 </body>
